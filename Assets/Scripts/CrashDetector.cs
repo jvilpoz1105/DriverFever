@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class CrashDetector : MonoBehaviour
 {
-    [SerializeField] private float crashDelay = 1f; // Delay before reloading the scene
+    [SerializeField] private float crashDelay = 1f; //  Delay before reloading the scene
     [SerializeField] private ParticleSystem crashEffect;
 
     PlayerController playerController;
