@@ -9,7 +9,7 @@ public class MenuManager : MonoBehaviour
     /// </summary>
     public void PlayGame()
     {
-        SceneManager.LoadScene("Level1");
+        SceneManager.LoadScene("Earth");
         
     }
 
