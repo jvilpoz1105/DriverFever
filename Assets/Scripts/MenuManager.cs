@@ -57,9 +57,9 @@ public class MenuManager : MonoBehaviour
     /// Load the specified level scene when the Select Level button is clicked
     /// </summary>
     /// <param name="level"></param>
-    public void GoToLevel(int level)
+    public void GoToLevel(string level)
     {
-        SceneManager.LoadScene($"Level{level}");
+        SceneManager.LoadScene($"{level}");
     }
 
 
