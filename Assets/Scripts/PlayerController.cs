@@ -42,7 +42,11 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!canControlPlayer) return; // If player input is disabled, exit the method
+        if (!canControlPlayer)
+        {
+            surfaceEffector2D.speed = 0f;
+            return; // If player input is disabled, exit the method
+        }
         
         PlayerTorque();     
         BoostPlayer();
@@ -95,13 +99,18 @@ public class PlayerController : MonoBehaviour
         //Increase the player's speed when the up arrow key is pressed
         //Surface Efector speed is increased to bootsSpeed
         if (moveInput.y > 0)
-        {     
-            surfaceEffector2D.speed = bootsSpeed; 
+        {
+            surfaceEffector2D.speed = IsSpacePressed() ? bootsSpeed : 0f;
         }
         else
-        {         
-            surfaceEffector2D.speed = baseSpeed; // Return to normal speed
+        {
+            surfaceEffector2D.speed = IsSpacePressed() ? baseSpeed : 0f; // Return to normal speed
         }
+    }
+
+    private bool IsSpacePressed()
+    {
+        return Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
     }
 
     // Detects when the player collides with the floor and plays the snow effect
