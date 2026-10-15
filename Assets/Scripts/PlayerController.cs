@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float torqueAmount = 1f;
     [SerializeField] private float bootsSpeed = 35f;
+    [SerializeField, Min(0f)] private float decelerationRate = 10f;
     [SerializeField] private ParticleSystem snowEffect;
     [SerializeField] private ScoreManager scoreManager;
     
@@ -21,7 +22,8 @@ public class PlayerController : MonoBehaviour
 
     int activePowerUpsCount; // Track the number of active power-ups
 
-    
+    bool hasStartedMoving;
+
     private bool canControlPlayer = true; // Flag to control player input
 
     public bool CanControlPlayer { get => canControlPlayer; set => canControlPlayer = value; }
@@ -36,6 +38,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         surfaceEffector2D = FindAnyObjectByType<SurfaceEffector2D>();
         baseSpeed = surfaceEffector2D.speed; // Store the initial speed of the SurfaceEffector2D
+        surfaceEffector2D.speed = 0f;
     }
     
 
@@ -96,15 +99,22 @@ public class PlayerController : MonoBehaviour
 
     void BoostPlayer()
     {
-        //Increase the player's speed when the up arrow key is pressed
-        //Surface Efector speed is increased to bootsSpeed
-        if (moveInput.y > 0)
+        if (IsSpacePressed())
         {
-            surfaceEffector2D.speed = IsSpacePressed() ? bootsSpeed : 0f;
+            hasStartedMoving = true;
+            surfaceEffector2D.speed = moveInput.y > 0 ? bootsSpeed : baseSpeed;
+        }
+        else if (hasStartedMoving)
+        {
+            float coastingSpeed = baseSpeed * 0.1f;
+            surfaceEffector2D.speed = Mathf.MoveTowards(
+                surfaceEffector2D.speed,
+                coastingSpeed,
+                decelerationRate * Time.deltaTime);
         }
         else
         {
-            surfaceEffector2D.speed = IsSpacePressed() ? baseSpeed : 0f; // Return to normal speed
+            surfaceEffector2D.speed = 0f;
         }
     }
 
