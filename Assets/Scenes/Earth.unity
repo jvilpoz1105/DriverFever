@@ -6483,11 +6483,11 @@ PrefabInstance:
       objectReference: {fileID: 1717626525}
     - target: {fileID: 562478588939321689, guid: 9abdd6317748a5346806e052ddb5acb0, type: 3}
       propertyPath: nitroDuration
-      value: 3
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 562478588939321689, guid: 9abdd6317748a5346806e052ddb5acb0, type: 3}
       propertyPath: verticalThrustForce
-      value: 14
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1017577103405999962, guid: 9abdd6317748a5346806e052ddb5acb0, type: 3}
       propertyPath: m_Name
