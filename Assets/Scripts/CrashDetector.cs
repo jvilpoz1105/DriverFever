@@ -29,4 +29,15 @@ public class CrashDetector : MonoBehaviour
         // Reload the current scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
+
+    // Método público para activar la muerte por trampa desde el PlayerController
+    public void TriggerCrash()
+    {
+        playerController.CanControlPlayer = false; // Disable player input
+        if (crashEffect != null)
+        {
+            crashEffect.Play();
+        }
+        Invoke(nameof(ReloadScene), crashDelay);
+    }
 }

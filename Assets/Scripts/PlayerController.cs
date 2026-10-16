@@ -4,16 +4,24 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+
+    //Variables hiperturbo
+    [Header("Hiperturbo (Tecla S)")]
+    [SerializeField] private float hyperTurboDuration = 3f; // Lo que dura activo
+    private bool isHyperTurboActive = false;
+    private float hyperTurboTimer = 0f;
+    private float hyperTurboCooldownTimer = 0f;
+
     [SerializeField] private float torqueAmount = 1f;
     [SerializeField] private float bootsSpeed = 35f;
     [SerializeField, Min(0f)] private float decelerationRate = 10f;
     [SerializeField] private ParticleSystem snowEffect;
     [SerializeField] private ScoreManager scoreManager;
-    
+
     SurfaceEffector2D surfaceEffector2D;
     Rigidbody2D rb;
 
-    float baseSpeed;    
+    float baseSpeed;
     InputAction moveAction;
     Vector2 moveInput;
     float previousRotation; // Store the previous rotation of the player
@@ -32,7 +40,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         // Activate the selected character model 
-        transform.GetChild(0).GetChild(PlayerPrefs.GetInt("SelectedCharacter", 0)).gameObject.SetActive(true); 
+        transform.GetChild(0).GetChild(PlayerPrefs.GetInt("SelectedCharacter", 0)).gameObject.SetActive(true);
 
         moveAction = InputSystem.actions.FindAction("Move");
         rb = GetComponent<Rigidbody2D>();
@@ -40,7 +48,7 @@ public class PlayerController : MonoBehaviour
         baseSpeed = surfaceEffector2D.speed; // Store the initial speed of the SurfaceEffector2D
         surfaceEffector2D.speed = 0f;
     }
-    
+
 
     // Update is called once per frame
     void Update()
@@ -50,11 +58,13 @@ public class PlayerController : MonoBehaviour
             surfaceEffector2D.speed = 0f;
             return; // If player input is disabled, exit the method
         }
-        
-        PlayerTorque();     
+
+        PlayerTorque();
         BoostPlayer();
-        CalculateFlips();        
-        
+        CalculateFlips();
+
+        HandleHyperTurbo();
+
     }
 
     /// <summary>
@@ -63,21 +73,21 @@ public class PlayerController : MonoBehaviour
     private void CalculateFlips()
     {
         // Get the current rotation of the player in degrees
-        float currentRotation = transform.rotation.eulerAngles.z; 
+        float currentRotation = transform.rotation.eulerAngles.z;
         // Calculate the change in rotation since the last frame
-        totalRotation += Mathf.DeltaAngle(previousRotation, currentRotation); 
-        
-        if (Math.Abs(totalRotation)> 340)
+        totalRotation += Mathf.DeltaAngle(previousRotation, currentRotation);
+
+        if (Math.Abs(totalRotation) > 340)
         {
             flipCount++; // Increment the flip count if the total rotation exceeds 360 degrees
-            
-            scoreManager.AddScore(flipCount*100); 
+
+            scoreManager.AddScore(flipCount * 100);
 
             totalRotation = 0; // Reset the total rotation for the next flip            
         }
 
         previousRotation = currentRotation; // Update the previous rotation for the next frame
-        
+
     }
 
     /// <summary>
@@ -85,7 +95,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void PlayerTorque()
     {
-        moveInput = moveAction.ReadValue<Vector2>(); 
+        moveInput = moveAction.ReadValue<Vector2>();
         if (moveInput.x < 0)
         {
             rb.AddTorque(torqueAmount);
@@ -94,7 +104,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddTorque(-torqueAmount);
         }
-        
+
     }
 
     void BoostPlayer()
@@ -128,8 +138,8 @@ public class PlayerController : MonoBehaviour
     {
         int layerIndex = LayerMask.NameToLayer("Floor");
         if (collision.gameObject.layer == layerIndex)
-        {            
-            snowEffect.Play();            
+        {
+            snowEffect.Play();
         }
     }
 
@@ -138,7 +148,7 @@ public class PlayerController : MonoBehaviour
     {
         int layerIndex = LayerMask.NameToLayer("Floor");
         if (collision.gameObject.layer == layerIndex)
-        {            
+        {
             snowEffect.Stop();
         }
     }
@@ -165,4 +175,73 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
+    // Gestiona la activación del Hiperturbo cada 10 segundos con la tecla S
+    void HandleHyperTurbo()
+    {
+        // Reducimos el tiempo de recarga si está en cooldown
+        if (hyperTurboCooldownTimer > 0)
+        {
+            hyperTurboCooldownTimer -= Time.deltaTime;
+        }
+
+        // Activar con la tecla S si ha pasado el tiempo de recarga
+        if (Keyboard.current != null && Keyboard.current.sKey.wasPressedThisFrame && hyperTurboCooldownTimer <= 0)
+        {
+            StartCoroutine(ActivateHyperTurboRoutine());
+            hyperTurboCooldownTimer = 10f; // 10 segundos de recarga
+        }
+
+        // Gestionar duración del hiperturbo
+        if (isHyperTurboActive)
+        {
+            hyperTurboTimer -= Time.deltaTime;
+            if (hyperTurboTimer <= 0)
+            {
+                isHyperTurboActive = false;
+            }
+        }
+    }
+
+    System.Collections.IEnumerator ActivateHyperTurboRoutine()
+    {
+        isHyperTurboActive = true;
+        hyperTurboTimer = hyperTurboDuration;
+        Debug.Log("¡HIPERTURBO ACTIVADO!");
+        yield return new WaitForSeconds(hyperTurboDuration);
+    }
+
+    // Detecta el choque contra las trampas
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Trap"))
+        {
+            if (isHyperTurboActive)
+            {
+                // ¡Destruye la trampa y suma 100 puntos!
+                Destroy(collision.gameObject);
+                if (scoreManager != null)
+                {
+                    scoreManager.AddScore(100);
+                }
+            }
+            else
+            {
+                // Si no llevas el hiperturbo... ¡Muerte igual que al volcar!
+                CrashDetector detector = FindAnyObjectByType<CrashDetector>();
+                if (detector != null)
+                {
+                    detector.TriggerCrash();
+                }
+                else
+                {
+                    // Plan B por si acaso no encuentra el detector
+                    canControlPlayer = false;
+                    surfaceEffector2D.speed = 0f;
+                }
+            }
+        }
+    }
 }
+
+
