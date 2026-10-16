@@ -12,6 +12,14 @@ public class PlayerController : MonoBehaviour
     private float hyperTurboTimer = 0f;
     private float hyperTurboCooldownTimer = 0f;
 
+    //Variables despegue
+    [Header("Propulsor Vertical / Cohete (Tecla W)")]
+    [SerializeField] private float verticalThrustForce = 150f; // Fuerza del impulso hacia arriba
+    [SerializeField] private float nitroDuration = 2f;       // Cuánto tiempo dura el impulso por uso
+    private bool hasNitro = false;                            // Se activa cada 1000 puntos
+    private bool isThrusting = false;
+    private float nitroTimer = 0f;
+
     [SerializeField] private float torqueAmount = 1f;
     [SerializeField] private float bootsSpeed = 35f;
     [SerializeField, Min(0f)] private float decelerationRate = 10f;
@@ -64,6 +72,7 @@ public class PlayerController : MonoBehaviour
         CalculateFlips();
 
         HandleHyperTurbo();
+        HandleVerticalThrust();
 
     }
 
@@ -241,6 +250,29 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+    }
+    void HandleVerticalThrust()
+    {
+        // Comprobamos directamente si se pulsa la W en el teclado y tenemos nitro
+        bool pressW = Keyboard.current != null && Keyboard.current.wKey.wasPressedThisFrame;
+
+        if (pressW && hasNitro && !isThrusting)
+        {
+            isThrusting = true;
+            hasNitro = false; // Consumimos la carga de Nitro
+
+            // Usamos IMPULSE para que sea un cohete instantáneo hacia arriba
+            rb.AddForce(Vector2.up * verticalThrustForce, ForceMode2D.Impulse);
+
+            Debug.Log("¡COHETE ACTIVADO CON LA W!");
+        }
+    }
+
+    // Método público para conceder Nitro desde el ScoreManager (cada 1000 puntos)
+    public void GrantNitro()
+    {
+        hasNitro = true;
+        Debug.Log("¡Nitro recargado! Listo para despegar con W.");
     }
 }
 
