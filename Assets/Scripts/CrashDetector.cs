@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class CrashDetector : MonoBehaviour
 {
-    [SerializeField] private float crashDelay = 1f; //  Delay before reloading the scene
+    [SerializeField] private float crashDelay = 1f;
     [SerializeField] private ParticleSystem crashEffect;
 
     PlayerController playerController;
@@ -13,31 +13,47 @@ public class CrashDetector : MonoBehaviour
         playerController = FindAnyObjectByType<PlayerController>();
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    void OnCollisionEnter2D(Collision2D collision)
     {
         int layerIndex = LayerMask.NameToLayer("Floor");
-        if (other.gameObject.layer == layerIndex)
+        if (collision.gameObject.layer == layerIndex)
         {
-            playerController.CanControlPlayer = false; // Disable player input
-            crashEffect.Play();
-            Invoke(nameof(ReloadScene), crashDelay);
+            // Solo se considera choque mortal si el coche está boca abajo (volcado)
+            // transform.up.y < 0 significa que el coche está invertido
+            if (transform.up.y < 0f)
+            {
+                if (playerController != null)
+                {
+                    playerController.CanControlPlayer = false;
+                }
+                
+                if (crashEffect != null)
+                {
+                    crashEffect.Play();
+                }
+                
+                Invoke(nameof(ReloadScene), crashDelay);
+            }
         }
     }
 
     void ReloadScene()
     {
-        // Reload the current scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    // Método público para activar la muerte por trampa desde el PlayerController
     public void TriggerCrash()
     {
-        playerController.CanControlPlayer = false; // Disable player input
+        if (playerController != null)
+        {
+            playerController.CanControlPlayer = false;
+        }
+        
         if (crashEffect != null)
         {
             crashEffect.Play();
         }
+        
         Invoke(nameof(ReloadScene), crashDelay);
     }
 }

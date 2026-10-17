@@ -55,6 +55,8 @@ public class PlayerController : MonoBehaviour
         surfaceEffector2D = FindAnyObjectByType<SurfaceEffector2D>();
         baseSpeed = surfaceEffector2D.speed; // Store the initial speed of the SurfaceEffector2D
         surfaceEffector2D.speed = 0f;
+
+        rb.simulated = false;
     }
 
 
@@ -120,7 +122,11 @@ public class PlayerController : MonoBehaviour
     {
         if (IsSpacePressed())
         {
-            hasStartedMoving = true;
+            if (!hasStartedMoving)
+            {
+                rb.simulated = true;
+                hasStartedMoving = true;
+            }
             surfaceEffector2D.speed = moveInput.y > 0 ? bootsSpeed : baseSpeed;
         }
         else if (hasStartedMoving)
@@ -273,6 +279,44 @@ public class PlayerController : MonoBehaviour
     {
         hasNitro = true;
         Debug.Log("¡Nitro recargado! Listo para despegar con W.");
+    }
+
+    void FixedUpdate()
+    {
+        // Ampliamos el radio a 1.8f para que cubra todo el coche de un extremo a otro (morro y trasera)
+        // Quitamos el filtro de capa para asegurarnos de que detecta cualquier trampa por su Tag
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1.8f);
+
+        foreach (Collider2D hit in hits)
+        {
+            if (hit != null && hit.CompareTag("Trap"))
+            {
+                if (isHyperTurboActive)
+                {
+                    // Si llevas el hiperturbo, destruye la trampa y suma puntos
+                    Destroy(hit.gameObject);
+                    if (scoreManager != null)
+                    {
+                        scoreManager.AddScore(100);
+                    }
+                }
+                else
+                {
+                    // Si no, activamos la muerte oficial
+                    CrashDetector detector = FindAnyObjectByType<CrashDetector>();
+                    if (detector != null)
+                    {
+                        detector.TriggerCrash();
+                    }
+                    else
+                    {
+                        canControlPlayer = false;
+                        surfaceEffector2D.speed = 0f;
+                    }
+                }
+                break; // Salimos del bucle al detectar la trampa
+            }
+        }
     }
 }
 
