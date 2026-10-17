@@ -4,13 +4,26 @@ using TMPro;
 public class ScoreManager : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI scoreText; 
-    [SerializeField] private PlayerController playerController; // Arrastra aquí al Player desde el Inspector
+    [SerializeField] private PlayerController playerController;
 
     private int currentScore = 0;
     private float timeCounter = 0f;
+    private bool isGameStarted = false; // Controla si el juego ha arrancado
+
+    void Start()
+    {
+        // Mostrar mensaje inicial antes de empezar a jugar
+        if (scoreText != null)
+        {
+            scoreText.text = "Ready, folks?";
+        }
+    }
 
     void Update()
     {
+        // Si el juego no ha empezado, no sumamos puntos por tiempo
+        if (!isGameStarted) return;
+
         // Sumar 10 puntos automáticamente cada 1 segundo de supervivencia
         timeCounter += Time.deltaTime;
         if (timeCounter >= 1f)
@@ -20,8 +33,18 @@ public class ScoreManager : MonoBehaviour
         }
     }
 
+    // Método para que el PlayerController active los puntos al pulsar espacio
+    public void StartGameScoring()
+    {
+        isGameStarted = true;
+        currentScore = 0; // Reseteamos por si acaso
+        scoreText.text = currentScore.ToString("00000");
+    }
+
     public void AddScore(int amount)
     {
+        if (!isGameStarted) return;
+
         int previousScore = currentScore;
         currentScore += amount;
         scoreText.text = currentScore.ToString("00000"); 

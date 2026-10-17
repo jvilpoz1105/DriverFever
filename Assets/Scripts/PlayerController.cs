@@ -126,6 +126,11 @@ public class PlayerController : MonoBehaviour
             {
                 rb.simulated = true;
                 hasStartedMoving = true;
+
+                if (scoreManager != null)
+                {
+                    scoreManager.StartGameScoring();
+                }
             }
             surfaceEffector2D.speed = moveInput.y > 0 ? bootsSpeed : baseSpeed;
         }
@@ -146,16 +151,6 @@ public class PlayerController : MonoBehaviour
     private bool IsSpacePressed()
     {
         return Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
-    }
-
-    // Detects when the player collides with the floor and plays the snow effect
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        int layerIndex = LayerMask.NameToLayer("Floor");
-        if (collision.gameObject.layer == layerIndex)
-        {
-            snowEffect.Play();
-        }
     }
 
     // Detects when the player exits the collision with the floor and stops the snow effect
@@ -226,14 +221,29 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(hyperTurboDuration);
     }
 
-    // Detecta el choque contra las trampas
-    void OnTriggerEnter2D(Collider2D collision)
+   // Detecta colisiones físicas con el suelo (nieve) y con las trampas
+    void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.CompareTag("Trap"))
+        int floorLayer = LayerMask.NameToLayer("Floor");
+
+        // 1. Colisión con el suelo
+        if (collision.gameObject.layer == floorLayer)
+        {
+            snowEffect.Play();
+
+            // Si está volcado (boca abajo), se considera muerte
+            if (transform.up.y < 0f)
+            {
+                ManejarChoque();
+            }
+        }
+
+        // 2. Colisión con la trampa
+        if (collision.gameObject.CompareTag("Trap"))
         {
             if (isHyperTurboActive)
             {
-                // ¡Destruye la trampa y suma 100 puntos!
+                // Destruye la trampa y da puntos si vas con el hiperturbo
                 Destroy(collision.gameObject);
                 if (scoreManager != null)
                 {
@@ -242,21 +252,28 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                // Si no llevas el hiperturbo... ¡Muerte igual que al volcar!
-                CrashDetector detector = FindAnyObjectByType<CrashDetector>();
-                if (detector != null)
-                {
-                    detector.TriggerCrash();
-                }
-                else
-                {
-                    // Plan B por si acaso no encuentra el detector
-                    canControlPlayer = false;
-                    surfaceEffector2D.speed = 0f;
-                }
+                // Si no llevas hiperturbo, mueres
+                ManejarChoque();
             }
         }
     }
+
+    // Método auxiliar para no repetir código de muerte
+    void ManejarChoque()
+    {
+        CrashDetector detector = FindAnyObjectByType<CrashDetector>();
+        if (detector != null)
+        {
+            detector.TriggerCrash();
+        }
+        else
+        {
+            canControlPlayer = false;
+            surfaceEffector2D.speed = 0f;
+        }
+    }
+
+
     void HandleVerticalThrust()
     {
         // Comprobamos directamente si se pulsa la W en el teclado y tenemos nitro
@@ -281,43 +298,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("¡Nitro recargado! Listo para despegar con W.");
     }
 
-    void FixedUpdate()
-    {
-        // Ampliamos el radio a 1.8f para que cubra todo el coche de un extremo a otro (morro y trasera)
-        // Quitamos el filtro de capa para asegurarnos de que detecta cualquier trampa por su Tag
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1.8f);
 
-        foreach (Collider2D hit in hits)
-        {
-            if (hit != null && hit.CompareTag("Trap"))
-            {
-                if (isHyperTurboActive)
-                {
-                    // Si llevas el hiperturbo, destruye la trampa y suma puntos
-                    Destroy(hit.gameObject);
-                    if (scoreManager != null)
-                    {
-                        scoreManager.AddScore(100);
-                    }
-                }
-                else
-                {
-                    // Si no, activamos la muerte oficial
-                    CrashDetector detector = FindAnyObjectByType<CrashDetector>();
-                    if (detector != null)
-                    {
-                        detector.TriggerCrash();
-                    }
-                    else
-                    {
-                        canControlPlayer = false;
-                        surfaceEffector2D.speed = 0f;
-                    }
-                }
-                break; // Salimos del bucle al detectar la trampa
-            }
-        }
-    }
 }
 
 
