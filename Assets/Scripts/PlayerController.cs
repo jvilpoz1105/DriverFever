@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
+
 
 public class PlayerController : MonoBehaviour
 {
@@ -11,12 +13,13 @@ public class PlayerController : MonoBehaviour
     private bool isHyperTurboActive = false;
     private float hyperTurboTimer = 0f;
     private float hyperTurboCooldownTimer = 0f;
+    [SerializeField] private TextMeshProUGUI turboNotificationText; // Arrastra aquí tu TurboText
 
     //Variables despegue
     [Header("Propulsor Vertical / Cohete (Tecla W)")]
     [SerializeField] private float verticalThrustForce = 150f; // Fuerza del impulso hacia arriba
     [SerializeField] private float nitroDuration = 2f;       // Cuánto tiempo dura el impulso por uso
-    private bool hasNitro = false;                            // Se activa cada 1000 puntos
+    private bool hasNitro = true;                            // Se activa cada 1000 puntos
     private bool isThrusting = false;
     private float nitroTimer = 0f;
 
@@ -193,6 +196,17 @@ public class PlayerController : MonoBehaviour
         if (hyperTurboCooldownTimer > 0)
         {
             hyperTurboCooldownTimer -= Time.deltaTime;
+
+            // Mientras recarga, ocultamos el aviso
+            if (turboNotificationText != null) turboNotificationText.gameObject.SetActive(false);
+        }
+        else
+        {
+            // Si ya está listo para usarse, mostramos el aviso
+            if (turboNotificationText != null && !isHyperTurboActive)
+            {
+                turboNotificationText.gameObject.SetActive(true);
+            }
         }
 
         // Activar con la tecla S si ha pasado el tiempo de recarga
@@ -200,6 +214,9 @@ public class PlayerController : MonoBehaviour
         {
             StartCoroutine(ActivateHyperTurboRoutine());
             hyperTurboCooldownTimer = 10f; // 10 segundos de recarga
+
+            // Al usarlo, lo ocultamos temporalmente
+            if (turboNotificationText != null) turboNotificationText.gameObject.SetActive(false);
         }
 
         // Gestionar duración del hiperturbo
@@ -221,7 +238,7 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(hyperTurboDuration);
     }
 
-   // Detecta colisiones físicas con el suelo (nieve) y con las trampas
+    // Detecta colisiones físicas con el suelo (nieve) y con las trampas
     void OnCollisionEnter2D(Collision2D collision)
     {
         int floorLayer = LayerMask.NameToLayer("Floor");
@@ -280,6 +297,11 @@ public class PlayerController : MonoBehaviour
     // Método auxiliar para no repetir código de muerte
     void ManejarChoque()
     {
+        // Avisamos al gestor de puntuación de que la palmamos
+        if (scoreManager != null)
+        {
+            scoreManager.TriggerGameOver();
+        }
         CrashDetector detector = FindAnyObjectByType<CrashDetector>();
         if (detector != null)
         {

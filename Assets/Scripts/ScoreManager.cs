@@ -5,6 +5,7 @@ public class ScoreManager : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI scoreText; 
     [SerializeField] private PlayerController playerController;
+    [SerializeField] private TextMeshProUGUI nitroNotificationText; // Arrastra aquí tu NitroText
 
     private int currentScore = 0;
     private float timeCounter = 0f;
@@ -17,6 +18,7 @@ public class ScoreManager : MonoBehaviour
         {
             scoreText.text = "Ready, folks?";
         }
+        if (nitroNotificationText != null) nitroNotificationText.gameObject.SetActive(false); // Oculto al inicio
     }
 
     void Update()
@@ -56,6 +58,20 @@ public class ScoreManager : MonoBehaviour
             {
                 playerController.GrantNitro();
             }
+            // Mostramos el aviso de Nitro disponible
+        if (nitroNotificationText != null)
+        {
+            nitroNotificationText.gameObject.SetActive(true);
+        }
         }
     }
+
+    public void TriggerGameOver()
+{
+    isGameStarted = false; // Detenemos el contador de puntos y tiempo
+    if (scoreText != null)
+    {
+        scoreText.text = "La has palmado, bro"; 
+    }
+}
 }

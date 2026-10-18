@@ -10,24 +10,30 @@ public class Trap : MonoBehaviour
 
         if (explosionPrefab != null)
         {
-            // 1. Instanciamos la explosión
+            // 1. Instanciamos la explosión en la posición de la trampa
             GameObject explosionInstance = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
             
-            // 2. Forzamos la reproducción de las partículas por código para que salgan sí o sí al nacer
-            ParticleSystem ps = explosionInstance.GetComponentInChildren<ParticleSystem>();
+            // 2. Opcional por código: si prefieres asegurarte mediante GetComponent explícito en la raíz o hijos:
+            ParticleSystem ps = explosionInstance.GetComponent<ParticleSystem>();
+            if (ps == null)
+            {
+                ps = explosionInstance.GetComponentInChildren<ParticleSystem>();
+            }
+
             if (ps != null)
             {
                 ps.Play();
             }
         }
 
-        // Ocultar sprite y colisionador
+        // Ocultar sprite y colisionador de la trampa
         SpriteRenderer sprite = GetComponentInChildren<SpriteRenderer>();
         if (sprite != null) sprite.enabled = false;
 
         Collider2D col = GetComponent<Collider2D>();
         if (col != null) col.enabled = false;
 
+        // Destruir la trampa
         Destroy(gameObject, 0.05f);
     }
 }
