@@ -16,7 +16,7 @@ public class ScoreManager : MonoBehaviour
         // Mostrar mensaje inicial antes de empezar a jugar
         if (scoreText != null)
         {
-            scoreText.text = "Ready, folks?";
+            scoreText.text = "¿LISTOS?";
         }
         if (nitroNotificationText != null) nitroNotificationText.gameObject.SetActive(false); // Oculto al inicio
     }
