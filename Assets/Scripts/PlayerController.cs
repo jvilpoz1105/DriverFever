@@ -241,10 +241,20 @@ public class PlayerController : MonoBehaviour
         // 2. Colisión con la trampa
         if (collision.gameObject.CompareTag("Trap"))
         {
+            Trap trapScript = collision.gameObject.GetComponent<Trap>();
+
             if (isHyperTurboActive)
             {
-                // Destruye la trampa y da puntos si vas con el hiperturbo
-                Destroy(collision.gameObject);
+                // Si llevas hiperturbo, explota la trampa y da puntos
+                if (trapScript != null)
+                {
+                    trapScript.ExplodeAndDestroy();
+                }
+                else
+                {
+                    Destroy(collision.gameObject);
+                }
+
                 if (scoreManager != null)
                 {
                     scoreManager.AddScore(100);
@@ -252,7 +262,16 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                // Si no llevas hiperturbo, mueres
+                // Si no llevas hiperturbo, explota la trampa y mueres
+                if (trapScript != null)
+                {
+                    trapScript.ExplodeAndDestroy();
+                }
+                else
+                {
+                    Destroy(collision.gameObject);
+                }
+
                 ManejarChoque();
             }
         }
