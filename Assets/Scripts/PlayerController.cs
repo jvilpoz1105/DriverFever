@@ -213,7 +213,7 @@ public class PlayerController : MonoBehaviour
         if (Keyboard.current != null && Keyboard.current.sKey.wasPressedThisFrame && hyperTurboCooldownTimer <= 0)
         {
             StartCoroutine(ActivateHyperTurboRoutine());
-            hyperTurboCooldownTimer = 10f; // 10 segundos de recarga
+            hyperTurboCooldownTimer = 5f; // 5 segundos de recarga
 
             // Al usarlo, lo ocultamos temporalmente
             if (turboNotificationText != null) turboNotificationText.gameObject.SetActive(false);

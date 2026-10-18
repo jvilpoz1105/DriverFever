@@ -51,8 +51,8 @@ public class ScoreManager : MonoBehaviour
         currentScore += amount;
         scoreText.text = currentScore.ToString("00000"); 
 
-        // Comprobar si hemos alcanzado o superado un múltiplo de 1000 para dar el Nitro
-        if (currentScore / 1000 > previousScore / 1000)
+        // Comprobar si hemos alcanzado o superado un múltiplo de 200 para dar el Nitro
+        if (currentScore / 200 > previousScore / 200)
         {
             if (playerController != null)
             {
