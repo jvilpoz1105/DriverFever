@@ -176,7 +176,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: NITRO VOLADOR LISTO (S)
+  m_text: NITRO VOLADOR LISTO (W)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 02b13c2914a51d74aa856c834affe550, type: 2}
   m_sharedMaterial: {fileID: -7617287112064229967, guid: 02b13c2914a51d74aa856c834affe550, type: 2}
