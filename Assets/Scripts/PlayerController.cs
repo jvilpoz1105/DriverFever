@@ -19,7 +19,7 @@ public class PlayerController : MonoBehaviour
     [Header("Propulsor Vertical / Cohete (Tecla W)")]
     [SerializeField] private float verticalThrustForce = 150f; // Fuerza del impulso hacia arriba
     [SerializeField] private float nitroDuration = 2f;       // Cuánto tiempo dura el impulso por uso
-    private bool hasNitro = true;                            // Se activa cada 1000 puntos
+    private bool hasNitro = true;                            // Se activa cada 200 puntos
     private bool isThrusting = false;
     private float nitroTimer = 0f;
 
@@ -189,7 +189,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Gestiona la activación del Hiperturbo cada 10 segundos con la tecla S
+    // Gestiona la activación del Hiperturbo cada 5 segundos con la tecla S
     void HandleHyperTurbo()
     {
         // Reducimos el tiempo de recarga si está en cooldown
